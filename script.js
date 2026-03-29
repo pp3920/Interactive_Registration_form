@@ -1,4 +1,4 @@
-
+// Select DOM elements
 const username = document.getElementById('username');
 const usernameError = document.getElementById('usernameError');
 
@@ -14,128 +14,106 @@ const confirmPasswordError = document.getElementById('confirmPasswordError');
 const form = document.getElementById('registrationForm');
 
 
-
-
-
-
-// session storage  
-
+// Load saved username from localStorage
 window.addEventListener('load', () => {
-    const savedUserName = sessionStorage.getItem('username');
-    if (savedUserName) {
-        username.value = savedUserName;
-    }
+  const savedUser = localStorage.getItem('username');
+  if (savedUser) {
+    username.value = savedUser;
+  }
 });
 
 
-//form submit handling
+// Username validation
+username.addEventListener('input', () => {
+  if (username.validity.valueMissing) {
+    username.setCustomValidity('Username is required');
+  } else {
+    username.setCustomValidity('');
+  }
 
-form.addEventListener("submit", (e) => {
-    e.preventDefault();
-
-    //save username
-    sessionStorage.setItem("username", username.value)
-
-    //validation for name
-
-    if (username.validity.valueMissing) {
-        username.setCustomValidity("Name filed should not be empty!!")
-    } else {
-        username.setCustomValidity("")
-    }
-
-    //validation for email
-
-    if (email.validity.typeMismatch) {
-        email.setCustomValidity('Please enter a valid email address, for example, name@example.com.');
-    } else if (email.validity.valueMissing) {
-        email.setCustomValidity('We need your email address to contact you!');
-    }
-    else {
-        email.setCustomValidity(''); // Clear custom error if valid
-    }
-    // Display the custom message or clear it
-    emailError.textContent = email.validationMessage;
-
-
-
-    //validation for password
-
-
-    if (!password.validity.valid) {
-        passwordError.textContent = "Password required";
-        return;
-    }
-
-    if (password.value !== confirmPassword.value) {
-        confirmPasswordError.textContent = "Passwords do not match";
-        return;
-    }
-
-    alert("Form submitted successfully!");
-    form.reset();
+  usernameError.textContent = username.validationMessage;
 });
 
 
+// Email validation
+email.addEventListener('input', () => {
+  if (email.validity.valueMissing) {
+    email.setCustomValidity('Email is required');
+  } else if (email.validity.typeMismatch) {
+    email.setCustomValidity('Enter a valid email (example: name@example.com)');
+  } else {
+    email.setCustomValidity('');
+  }
+
+  emailError.textContent = email.validationMessage;
+});
 
 
-/*
-//validation for user name
-username.addEventListener("blur", (e) => {
-if(username.validity.valueMissing){
-    username.setCustomValidity("Name filed should not be empty!!")
-} else {
-    username.setCustomValidity("")
-}
-username.reportValidity()
-})
+// Password validation
+password.addEventListener('input', () => {
+  const value = password.value;
+
+  const hasUppercase = /[A-Z]/.test(value);
+  const hasLowercase = /[a-z]/.test(value);
+  const hasNumber = /[0-9]/.test(value);
+
+  if (value.length < 8) {
+    password.setCustomValidity('Minimum 8 characters required');
+  } else if (!hasUppercase || !hasLowercase || !hasNumber) {
+    password.setCustomValidity('Must include uppercase, lowercase, and number');
+  } else {
+    password.setCustomValidity('');
+  }
+
+  passwordError.textContent = password.validationMessage;
+});
 
 
-//validation for email
+// Confirm Password validation
+confirmPassword.addEventListener('input', () => {
+  if (confirmPassword.value !== password.value) {
+    confirmPassword.setCustomValidity('Passwords do not match');
+  } else {
+    confirmPassword.setCustomValidity('');
+  }
 
-  email.addEventListener('input', function(event) {
-    if (email.validity.typeMismatch) {
-      email.setCustomValidity('Please enter a valid email address, for example, name@example.com.');
-    } else if (email.validity.valueMissing) {
-      email.setCustomValidity('We need your email address to contact you!');
-    }
-    else {
-      email.setCustomValidity(''); // Clear custom error if valid
-    }
-    // Display the custom message or clear it
+  confirmPasswordError.textContent = confirmPassword.validationMessage;
+});
+
+
+// Form submit
+form.addEventListener('submit', (event) => {
+  event.preventDefault();
+
+  // Final validation check
+  if (!username.validity.valid) {
+    usernameError.textContent = username.validationMessage;
+    username.focus();
+    return;
+  }
+
+  if (!email.validity.valid) {
     emailError.textContent = email.validationMessage;
-  });
+    email.focus();
+    return;
+  }
 
-  
-  password.addEventListener('input', function(event) {
-    if (email.validity.typeMismatch) {
-      email.setCustomValidity('Please enter a valid email address, for example, name@example.com.');
-    } else if (email.validity.valueMissing) {
-      email.setCustomValidity('We need your email address to contact you!');
-    }
-    else {
-      email.setCustomValidity(''); // Clear custom error if valid
-    }
-    // Display the custom message or clear it
-    customEmailError.textContent = email.validationMessage;
-  });
+  if (!password.validity.valid) {
+    passwordError.textContent = password.validationMessage;
+    password.focus();
+    return;
+  }
 
-  form.addEventListener('submit', function(event) {
-    event.preventDefault(); // Stop the default form submission
+  if (!confirmPassword.validity.valid) {
+    confirmPasswordError.textContent = confirmPassword.validationMessage;
+    confirmPassword.focus();
+    return;
+  }
+
+  alert('Form submitted successfully!');
+
  
-    if (!nameInput.validity.valid) {
-      alert('Please enter your name.');
-      nameInput.focus();
-      return; // Stop further processing if invalid
-    }
- 
-    // If valid, process the form data
-    const formData = new FormData(form);
-    const nameValue = formData.get('name');
-    alert('Form submitted! Name: ' + nameValue);
-    // Here you would typically send data to a server using fetch() or XMLHttpRequest
-    // e.g., fetch('/submit-form', { method: 'POST', body: formData });
-    form.reset(); // Optionally reset the form
-  });
+  localStorage.setItem('username', username.value);
 
-
+  form.reset();
+});
